@@ -41,6 +41,7 @@ ipython==8.30.0
 isoduration==20.11.0
 jedi==0.19.2
 Jinja2==3.1.4
+joblib==1.4.2
 json5==0.10.0
 jsonpointer==3.0.0
 jsonschema==4.23.0
@@ -108,6 +109,8 @@ rfc3339-validator==0.1.4
 rfc3986-validator==0.1.1
 rich==13.9.4
 rpds-py==0.21.0
+scikit-learn==1.6.0
+scipy==1.14.1
 Send2Trash==1.8.3
 setuptools==75.6.0
 six==1.16.0
@@ -121,6 +124,7 @@ tensorboard-data-server==0.7.2
 tensorflow==2.18.0
 termcolor==2.5.0
 terminado==0.18.1
+threadpoolctl==3.5.0
 tinycss2==1.4.0
 toolz==1.0.0
 tornado==6.4.2
