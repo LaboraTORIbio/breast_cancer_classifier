@@ -35,8 +35,8 @@ def image_from_local_path_to_base64(image_path, image_format):
 
 
 def post_image_to_api(image):
-    #url = 'http://localhost:9000/2015-03-31/functions/function/invocations'
-    url = 'https://8t510ynh79.execute-api.us-east-1.amazonaws.com/test/predict'
+    url = 'http://localhost:9000/2015-03-31/functions/function/invocations'
+    #url = 'https://###########################.amazonaws.com/test/predict'
     data = {'image': image}
     result = requests.post(url, json=data).json()
     return result
