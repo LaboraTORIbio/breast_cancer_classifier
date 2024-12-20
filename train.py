@@ -54,8 +54,9 @@ def process_dataset(train_ds, val_ds, test_ds):
 
 
 def fine_tune_model(train_ds, val_ds, class_weights_dict):
+    checkpoint_filepath = 'breast_cancer_classifier.keras'
     checkpoint = ModelCheckpoint(
-        'model_{epoch:02d}_{val_accuracy:.3f}.keras',
+        'breast_cancer_classifier.keras',
         save_best_only=True,
         monitor='val_accuracy',
         mode='max'
@@ -103,6 +104,9 @@ def fine_tune_model(train_ds, val_ds, class_weights_dict):
     # Fine-tune the model:
     print('\nFine-tuning the model...')
     history = model.fit(train_ds, epochs=10, class_weight=class_weights_dict, validation_data=val_ds, callbacks=[checkpoint])
+
+    # Load the best model:
+    model = tf.keras.models.load_model(checkpoint_filepath)
     
     return model, history
 
