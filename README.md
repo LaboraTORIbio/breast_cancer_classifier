@@ -1,7 +1,5 @@
 # Breast Cancer Classifier
 
-## Index
-
 * [Project Overview](#project-overview)
     * [Dataset](#dataset)
     * [Technologies](#technologies)
@@ -13,7 +11,7 @@
 * [Project Details](#project-details)
 
 
-## Project Overview
+# Project Overview
 
 Breast cancer is one of the most prevalent cancers worldwide, with estimates suggesting that 1 in 8 women will be affected during their lifetime. While advancements in treatment have reduced mortality rates, the timing of diagnosis plays a critical role in prognosis. Early detection significantly improves treatment efficacy, leading to better survival rates and quality of life for patients, as well as reducing the burden on healthcare systems.
 
@@ -41,11 +39,11 @@ I used the **Breast Ultrasound Images Dataset**, available at: https://www.kaggl
 ![](imgs/proj_overview.png)
 
 
-## How To Run
+# How To Run
 
 This project includes (i) a [Training pipeline](#training-pipeline) and (ii) an [Inference pipeline](#inference-pipeline) to predict the life expectancy of a given country/population.
 
-### Initial setup
+## Initial setup
 
 #### 1. Clone the project repository:
 
@@ -87,7 +85,7 @@ To deactivate the virtual environment, simply run `deactivate`.
 pip install requirements.txt
 ```
 
-### Training pipeline
+## Training pipeline
 
 The training pipeline can be run from the main project directory:
 
@@ -100,7 +98,7 @@ python train.py -i ./data/us_only -o ./breast_cancer_classifier.tflite
 
 The pipeline will (1) split the dataset into training, validation and test, (2) load and preprocess the ultrasound images, (3) train a fully connected neural network on top of the frozen ResNet50 CNN, (4) fine-tune the outter layers of the ResNet50 CNN with the traning data, (5) evaluate the model, and (6) output the best performing model in terms of validation accuracy, in .keras and .tflite formats (please, note that a seed was not set, so different results will be obtained everytime the pipeline is run).
 
-### Inference pipeline
+## Inference pipeline
 
 The inference pipeline can be containerized to deploy it either locally or as a web service.
 
@@ -177,5 +175,5 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
     ![](imgs/API_testing.png)
 
 
-## Project Details
+# Project Details
 
