@@ -14,11 +14,11 @@
 
 # Project Overview
 
-Breast cancer is one of the most prevalent cancers worldwide, with estimates suggesting that 1 in 8 women will be affected during their lifetime. While advancements in treatment have reduced mortality rates, the timing of diagnosis plays a critical role in prognosis. Early detection significantly improves treatment efficacy, leading to better survival rates and quality of life for patients, as well as reducing the burden on healthcare systems.
+Breast cancer is one of the most prevalent cancers worldwide, with estimates suggesting that 1 in 8 women will be affected during their lifetime. While advancements in treatment have reduced mortality rates, the timing of diagnosis plays a critical role in prognosis. Early detection significantly improves treatment efficacy, leading to better survival rates and quality of life for patients, as well as reduces the burden on healthcare systems.
 
 Ultrasound imaging is commonly used for breast cancer screening and diagnosis due to its non-invasive nature and accessibility. However, it has limitations. Differentiating between normal tissue, benign masses, and malignant tumors can be challenging, potentially leading to missed or false diagnoses. This creates a need for more advanced diagnostic tools. In this context, AI tools can offer assistance to radiologists, potentially leading to earlier interventions.
 
-In this project, I developed a deep learning-based approach&mdash;a Convolutional Neural Network (CNN)&mdash;to classify breast ultrasound images into normal, benign or malignant.
+In this project, I developed a Deep Learning-based approach&mdash;a Convolutional Neural Network (CNN)&mdash;to classify breast ultrasound images into normal, benign or malignant, achieving an overall 85% accuracy. I also wrapped the model and necessary scripts into a Docker container and prepared it for deployment, either local or as a web service.
 
 ### Dataset:
 
@@ -55,12 +55,12 @@ cd breast_cancer_classifier
 
 #### 2. Dowload and setup the dataset:
 
-Download the [Breast Ultrasound Images Dataset](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/) and place it in `./data/full`, inside the main project directory. The downloaded dataset includes three directories, one for each class, containing both ultrasound and mask images (see [Project Details](#project-details) for an explanation on masks).
+Download the [Breast Ultrasound Images Dataset](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset/) and place it in `./data/full`, inside the main project directory. The downloaded dataset includes three directories, one for each class, containing both ultrasound and mask images.
 
-This project only uses ultrasound images for classification. Run the following code in a terminal, from the main project directory, to create a new directory containing only ultrasound images (`./data/us_only`):
+This project only uses ultrasound images for classification (see [Project Details](#project-details)). Run the following code in a terminal, from the main project directory, to create a new directory containing only ultrasound images (`./data/us_only`):
 
 ```bash
-!if [ ! -d "./data/us_only" ]; then \
+if [ ! -d "./data/us_only" ]; then \
     echo "Creating directory ./data/us_only"; \
     cp -r ./data/full ./data/us_only && \
     rm -rf ./data/us_only/*/*mask*; \
@@ -74,7 +74,7 @@ fi
 To create and activate a virtual environment, run the following commands from the main project directory:
 
 ```bash
-python3 -m venv breast-cancer-classifier
+python -m venv breast-cancer-classifier
 source ./breast-cancer-classifier/bin/activate
 ```
 
@@ -88,7 +88,7 @@ pip install requirements.txt
 
 ## Training pipeline
 
-The training pipeline can be run from the main project directory:
+The training pipeline `train.py` can be run from the main project directory:
 
 ```bash
 # With default arguments:
@@ -97,7 +97,7 @@ python train.py
 python train.py -i ./data/us_only -o ./breast_cancer_classifier.tflite
 ```
 
-The pipeline will (1) split the dataset into training, validation and test, (2) load and preprocess the ultrasound images, (3) train a fully connected neural network on top of the frozen ResNet50 convolution layers, (4) fine-tune the outter convolution layers of ResNet50 with the traning data, (5) evaluate the model, and (6) output the best performing model in terms of validation accuracy, in .keras and .tflite formats (please, note that a seed was not set, so different results will be obtained everytime the pipeline is run).
+The pipeline will (1) split the dataset into training, validation and test, (2) load and preprocess the ultrasound images, (3) train a fully connected neural network on top of the frozen ResNet50 convolution layers, (4) fine-tune the outer convolution layers of ResNet50 with the traning data, (5) evaluate the model, and (6) output the best performing model in terms of validation accuracy, in .keras and .tflite formats (please, note that a seed was not set, so different results will be obtained everytime the pipeline is run).
 
 ## Inference pipeline
 
@@ -113,7 +113,7 @@ The image incorporates all necessary libraries, the model and the lambda functio
 
 #### 2. Make predictions:
 
-Predictions&mdash;both if the model is deployed locally or as a web serive&mdash;can be made by running the `test.py`. This script can accept an image from an URL (line 45) or located locally (line 50), and it converts the image to its base64 string to send as request. When the `lambda_function.py` recieves the request, it first converts the base64 string back as an image, processes it according to the ResNet50 requirements, and makes and returns the predictions. The URL and local image provided by default in `test.py` correspond to malignant tumors.
+Predictions&mdash;both in local and cloud-based deployment&mdash;can be made by running the `test.py` script. This script can accept an image from an URL (line 45) or a local path (line 50), and it converts the image to its base64 string to send as request. When `lambda_function.py` recieves the request, it first converts the base64 string back as an image, processes it according to the ResNet50 requirements, and makes and returns the predictions. The URL and local image provided by default in `test.py` correspond to malignant tumors.
 
 * **Locally:**
 
@@ -133,7 +133,7 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
 
 * **Web service:**
 
-    The inference pipeline can be served as a web service through the AWS Lambda function. First, create an [AWS account](https://aws.amazon.com/) and an [IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html), giving the user permission for AWS Lambda and AWS ECR tasks. Then, install and configure AWS CLI, [authenticating using IAM user credentials](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-user.html):
+    The inference pipeline can be served as a web service through the AWS Lambda function. First, create an [AWS account](https://aws.amazon.com/) and an [IAM user](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_users_create.html), giving the user permission for AWS Lambda and AWS ECR tasks. Then, install and configure the AWS CLI, [authenticating using the IAM user credentials](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-user.html):
 
     ```bash
     pip install awscli
@@ -158,7 +158,7 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
     docker push ${REMOTE_URI}
     ```
     
-    Now, the **AWS Lambda function** can easily be created from the container image: Lambda > Functions > Create function > Container image > Enter function name (breast-cancer-classifier) and select image in "Container image URI" > Create function. The Lambda function can be tested, using the base64 string of an image:
+    Now, the **AWS Lambda function** can easily be created from the container image: Lambda > Functions > Create function > Container image > Enter function name (breast-cancer-classifier) and select the image in "Container image URI" > Create function. The Lambda function can be tested, using the base64 string of an image:
 
     ![](imgs/lambda_function.png)
 
@@ -167,7 +167,7 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
     ![](imgs/API_resource.png)
     ![](imgs/API_deployed.png)
 
-    Now, requests can be made by running the `train.py` script, commenting line 38 and uncommenting line 39, where the Invoke URL provided by API Gateway should be provided, ended by the resource name /predict:
+    Now, requests can be made by running the `train.py` script, commenting line 38 and uncommenting line 39, where the Invoke URL provided by API Gateway should be provided, ended by /predit (the resource name):
 
     ```bash
     python test.py
@@ -178,30 +178,30 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
 
 # Project Details
 
-The **Breast Ultrasound Images Dataset** comprises **ultrasound images** and their associated **mask images**. These are binary or multi-class images that indicates which pixels in the original image correspond to a specific region or structure (e.g. a tumor region), and can be used for segmentation tasks&mdash;the delineation of important regions (e.g. tumors) in unseen data. Masks can also aid the classification of images into different classes by making the algorithm focus on certain regions.
+The **Breast Ultrasound Images Dataset** comprises **ultrasound images** and their associated **mask images**. These are binary or multi-class images that indicates which pixels in the original image correspond to a specific region or structure (e.g. a tumor region), and can be used for segmentation tasks&mdash;the delineation of important regions (e.g. tumors) in unseen data. Masks can also aid the classification of images into different classes by making the algorithm focus on specific regions of interest.
 
 <p align="center">
   <img src="https://ars.els-cdn.com/content/image/1-s2.0-S2352340919312181-gr4.jpg" />
 </p>
 
-After **exploratory data analysis (EDA)**, I observed that some ultrasound images in the Breast Ultrasound Images Dataset had more that one mask image associated (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Deciding which masks are more appropriate requires specialized field knowledge. Moreover, the computation of **average images** showed that images within each class are highly heterogenous, possibly difficulting the identification of differentiating features between classes.
+After **exploratory data analysis (EDA)**, I observed that some ultrasound images in the Breast Ultrasound Images Dataset had more that one associated mask image (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Deciding which mask is the most appropriate in these cases requires specialized field knowledge. Moreover, the computation of **average images** showed that images within each class are highly heterogenous, possibly difficulting the identification of differentiating features between classes.
 
 ![](imgs/avg_img.png)
 
-Considering everything, I decided to subset only **ultrasound images to train a classical classification model to explore the capacity of a Deep Learning model in learning features of normal, benign and malignant samples without the help of masks**.
+Considering everything, I decided to subset only **ultrasound images to train a traditional classification model, to explore the capacity of Deep Learning models in learning features of normal, benign and malignant samples without the help of segmentation masks**.
 
-The dataset also had a **mild class imbalance**, with more examples of the class 'benign' compared to 'malignant' and 'normal' (an approximate ratio of 50/25/20), which could lead to a biased learning towards the 'benign' class. By training a **simple CNN from scratch**, I observed that **data augmentation** (random flip, rotation and zoom) did not improve model accuracy, which was in fact lower compared to the non-augmented dataset (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). These might introduce modifications to the images that make the model learn features that are not generalizable, as well as exacerbate the effects of class imbalance. Thus, I proceeded model training with the original dataset.
+The dataset also had a **mild class imbalance**, with more examples of the class 'benign' compared to 'malignant' and 'normal' (an approximate ratio of 50/25/20), which could lead to a biased learning towards the 'benign' class. By training a **simple CNN from scratch**, I observed that **data augmentation** (random flip, rotation and zoom) did not improve model accuracy, which was in fact lower compared to the non-augmented dataset (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). In this case, data augmentation could introduce alterations to the images that cause the model to learn non-generalizable features, potentially worsening its performance. It may also worsen the effects of class imbalance. Thus, I proceeded model training with the original dataset.
 
-Then, I trained a **CNN** for image classification through **transfer learning**, using class weights to mitigate class imbalance. For the base model, I used the convolution layers of the [ResNet50](https://keras.io/api/applications/resnet/) architecture. During a **first round of training**, I freezed the base model to prevent updating the weights of ResNet50, and trained a Neural Network of fully connected dense layers, tuning hyperparameters such as the number of dense layers, the size of these layers, dropout for regularization and the learning rate. After selecting the best-performing hyperparameters, I **fine-tuned** the model by performing a second round of training, unfreezing the outermost convolution layers of ResNet50 to update its weights with the training data. This fine-tuning step increased prediction accuracy on the validation dataset, although in the expense of overfitting.
+Then, I trained a **CNN** for image classification through **transfer learning**, using class weights to mitigate class imbalance. For the base model, I used the convolution layers of the [ResNet50](https://keras.io/api/applications/resnet/) architecture. During a **first round of training**, I freezed the base model to prevent updating the weights of ResNet50, and trained a Neural Network of fully connected dense layers, tuning hyperparameters such as the number of dense layers, the size of these layers, dropout for regularization and learning rate. After selecting the best-performing hyperparameters, I **fine-tuned the model** by performing a second round of training, unfreezing the outermost convolution layers of ResNet50 to update its weights with the training data. This fine-tuning step increased prediction accuracy on the validation dataset, although in the expense of overfitting.
 
-Finally, the fine-tuned final model showed an **85% accuracy on the test dataset** (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Precision and recall indicate that the model performs well in differentiating normal from abnormal breast tissue, but performs worse when discerning between benign and malignant cases, with a bias towards benign, probably due to the class imbalance.
+Finally, the fine-tuned final model showed an **85% accuracy on the test dataset** (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Precision and recall indicate that the model performs well in differentiating between normal and abnormal breast tissue, but performs worse when discerning between benign and malignant cases, showing a bias towards benign predictions, probably due to the class imbalance.
 
 ![](imgs/metrics.png)
 
-In conclusion, these results highlight the power of CNNs to learn features that differentiate highly similar images from different classes, even without the help of masks.
+In conclusion, these results highlight the power of CNNs to learn features that differentiate highly similar images belonging to different classes, even without the help of segmentation masks.
 
 # Future Directions
 
-The classical CNN model could be improved by testing different data augmentation techniques, such as brightness changes, or by only augmenting unrepresented classes like 'malignant'. Also, although the fine-tuned model performed the best in terms of validation accuracy, it also overfitted. It could therefore be interesting to further test the performance of the model prior to fine-tuning (without updated weights in the outer convolution layers). Moreover, setting a seed for model training would ensure reproducibility of results.
+The traditional CNN model could be improved by testing different data augmentation techniques, such as brightness changes, or by only augmenting unrepresented classes such as 'malignant'. Also, although the fine-tuned model performed the best in terms of validation accuracy, it also overfitted substantially. It could therefore be interesting to further test the performance of the model before fine-tuning (without updated weights in the outer convolution layers). Moreover, setting a seed for model training would ensure reproducibility of results.
 
 Finally, a classification model could be trained using the mask images. This would theoretically improve classification accuracy significantly, by indicating the algorithm which features of the image are important for tumor diagnosis.
