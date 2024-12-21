@@ -1,4 +1,4 @@
-# Breast Cancer Classifier
+# Breast Cancer Image Classifier
 
 * [Project Overview](#project-overview)
     * [Dataset](#dataset)
