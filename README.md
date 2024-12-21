@@ -9,6 +9,7 @@
     * [Training pipeline](#training-pipeline)
     * [Inference pipeline](#inference-pipeline)
 * [Project Details](#project-details)
+* [Future Directions](#future-directions)
 
 
 # Project Overview
@@ -17,7 +18,7 @@ Breast cancer is one of the most prevalent cancers worldwide, with estimates sug
 
 Ultrasound imaging is commonly used for breast cancer screening and diagnosis due to its non-invasive nature and accessibility. However, it has limitations. Differentiating between normal tissue, benign masses, and malignant tumors can be challenging, potentially leading to missed or false diagnoses. This creates a need for more advanced diagnostic tools. In this context, AI tools can offer assistance to radiologists, potentially leading to earlier interventions.
 
-In this project, I developed a deep learning-based approach&mdash;a Convolutional Neural Network (CNN) followed by fully connected neural layers&mdash;to classify breast ultrasound images into normal, benign or malignant.
+In this project, I developed a deep learning-based approach&mdash;a Convolutional Neural Network (CNN)&mdash;to classify breast ultrasound images into normal, benign or malignant.
 
 ### Dataset:
 
@@ -41,7 +42,7 @@ I used the **Breast Ultrasound Images Dataset**, available at: https://www.kaggl
 
 # How To Run
 
-This project includes (i) a [Training pipeline](#training-pipeline) and (ii) an [Inference pipeline](#inference-pipeline) to predict the life expectancy of a given country/population.
+This project includes (i) a [Training pipeline](#training-pipeline) and (ii) an [Inference pipeline](#inference-pipeline).
 
 ## Initial setup
 
@@ -96,7 +97,7 @@ python train.py
 python train.py -i ./data/us_only -o ./breast_cancer_classifier.tflite
 ```
 
-The pipeline will (1) split the dataset into training, validation and test, (2) load and preprocess the ultrasound images, (3) train a fully connected neural network on top of the frozen ResNet50 CNN, (4) fine-tune the outter layers of the ResNet50 CNN with the traning data, (5) evaluate the model, and (6) output the best performing model in terms of validation accuracy, in .keras and .tflite formats (please, note that a seed was not set, so different results will be obtained everytime the pipeline is run).
+The pipeline will (1) split the dataset into training, validation and test, (2) load and preprocess the ultrasound images, (3) train a fully connected neural network on top of the frozen ResNet50 convolution layers, (4) fine-tune the outter convolution layers of ResNet50 with the traning data, (5) evaluate the model, and (6) output the best performing model in terms of validation accuracy, in .keras and .tflite formats (please, note that a seed was not set, so different results will be obtained everytime the pipeline is run).
 
 ## Inference pipeline
 
@@ -177,3 +178,30 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
 
 # Project Details
 
+The **Breast Ultrasound Images Dataset** comprises **ultrasound images** and their associated **mask images**. These are binary or multi-class images that indicates which pixels in the original image correspond to a specific region or structure (e.g. a tumor region), and can be used for segmentation tasks&mdash;the delineation of important regions (e.g. tumors) in unseen data. Masks can also aid the classification of images into different classes by making the algorithm focus on certain regions.
+
+![](https://ars.els-cdn.com/content/image/1-s2.0-S2352340919312181-gr4.jpg)
+
+After **exploratory data analysis (EDA)**, I observed that some ultrasound images in the Breast Ultrasound Images Dataset had more that one mask image associated (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Deciding which masks are more appropriate requires specialized field knowledge. Moreover, the computation of **average images** showed that images within each class are highly heterogenous, possibly difficulting the identification of differentiating features between classes.
+
+
+
+Considering everything, I decided to subset only **ultrasound images to train a classical classification model to explore the capacity of a Deep Learning model in learning features of normal, benign and malignant samples without the help of masks**.
+
+The dataset also had a **mild class imbalance**, with more examples of the class 'benign' compared to 'malignant' and 'normal' (an approximate ratio of 50/25/20), which could lead to a biased learning towards the 'benign' class. By training a **simple CNN from scratch**, I observed that **data augmentation** (random flip, rotation and zoom) did not improve model accuracy, which was in fact lower compared to the non-augmented dataset (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). These might introduce modifications to the images that make the model learn features that are not generalizable, as well as exacerbate the effects of class imbalance. Thus, I proceeded model training with the original dataset.
+
+![](imgs/avg_img.png)
+
+Then, I trained a **CNN** for image classification through **transfer learning**, using class weights to mitigate class imbalance. For the base model, I used the convolution layers of the [ResNet50](https://keras.io/api/applications/resnet/) architecture. During a **first round of training**, I freezed the base model to prevent updating the weights of ResNet50, and trained a Neural Network of fully connected dense layers, tuning hyperparameters such as the number of dense layers, the size of these layers, dropout for regularization and the learning rate. After selecting the best-performing hyperparameters, I **fine-tuned** the model by performing a second round of training, unfreezing the outermost convolution layers of ResNet50 to update its weights with the training data. This fine-tuning step increased prediction accuracy on the validation dataset, although in the expense of overfitting.
+
+Finally, the fine-tuned final model showed an **85% accuracy on the test dataset** (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Precision and recall indicate that the model performs well in differentiating normal from abnormal breast tissue, but performs worse when discerning between benign and malignant cases, with a bias towards benign, probably due to the class imbalance.
+
+![](imgs/metrics.png)
+
+In conclusion, these results highlight the power of CNNs to learn features that differentiate highly similar images from different classes, even without the help of masks.
+
+# Future Directions
+
+The classical CNN model could be improved by testing different data augmentation techniques, such as brightness changes, or by only augmenting unrepresented classes like 'malignant'. Also, although the fine-tuned model performed the best in terms of validation accuracy, it also overfitted. It could therefore be interesting to further test the performance of the model prior to fine-tuning (without updated weights in the outer convolution layers). Moreover, setting a seed for model training would ensure reproducibility of results.
+
+Finally, a classification model could be trained using the mask images. This would theoretically improve classification accuracy significantly, by indicating the algorithm which features of the image are important for tumor diagnosis.
