@@ -180,17 +180,17 @@ Predictions&mdash;both if the model is deployed locally or as a web serive&mdash
 
 The **Breast Ultrasound Images Dataset** comprises **ultrasound images** and their associated **mask images**. These are binary or multi-class images that indicates which pixels in the original image correspond to a specific region or structure (e.g. a tumor region), and can be used for segmentation tasks&mdash;the delineation of important regions (e.g. tumors) in unseen data. Masks can also aid the classification of images into different classes by making the algorithm focus on certain regions.
 
-![](https://ars.els-cdn.com/content/image/1-s2.0-S2352340919312181-gr4.jpg)
+<p align="center">
+  <img src="https://ars.els-cdn.com/content/image/1-s2.0-S2352340919312181-gr4.jpg" />
+</p>
 
 After **exploratory data analysis (EDA)**, I observed that some ultrasound images in the Breast Ultrasound Images Dataset had more that one mask image associated (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). Deciding which masks are more appropriate requires specialized field knowledge. Moreover, the computation of **average images** showed that images within each class are highly heterogenous, possibly difficulting the identification of differentiating features between classes.
 
-
+![](imgs/avg_img.png)
 
 Considering everything, I decided to subset only **ultrasound images to train a classical classification model to explore the capacity of a Deep Learning model in learning features of normal, benign and malignant samples without the help of masks**.
 
 The dataset also had a **mild class imbalance**, with more examples of the class 'benign' compared to 'malignant' and 'normal' (an approximate ratio of 50/25/20), which could lead to a biased learning towards the 'benign' class. By training a **simple CNN from scratch**, I observed that **data augmentation** (random flip, rotation and zoom) did not improve model accuracy, which was in fact lower compared to the non-augmented dataset (see the [Project Notebook](https://github.com/LaboraTORIbio/breast_cancer_classifier/blob/main/project_notebook.ipynb)). These might introduce modifications to the images that make the model learn features that are not generalizable, as well as exacerbate the effects of class imbalance. Thus, I proceeded model training with the original dataset.
-
-![](imgs/avg_img.png)
 
 Then, I trained a **CNN** for image classification through **transfer learning**, using class weights to mitigate class imbalance. For the base model, I used the convolution layers of the [ResNet50](https://keras.io/api/applications/resnet/) architecture. During a **first round of training**, I freezed the base model to prevent updating the weights of ResNet50, and trained a Neural Network of fully connected dense layers, tuning hyperparameters such as the number of dense layers, the size of these layers, dropout for regularization and the learning rate. After selecting the best-performing hyperparameters, I **fine-tuned** the model by performing a second round of training, unfreezing the outermost convolution layers of ResNet50 to update its weights with the training data. This fine-tuning step increased prediction accuracy on the validation dataset, although in the expense of overfitting.
 
